@@ -1,36 +1,82 @@
 # Roadmap
 
-## Phase 1 — Current MVP
+This roadmap outlines the evolution from MVP to production-ready system.
 
-- relay service for intake and policy evaluation,
-- endpoint service for independent token verification,
-- signed token flow,
-- local Docker Compose environment,
-- basic audit logging,
-- demo documentation.
+---
 
-## Phase 2 — Review-Ready Prototype
+## Phase 1 — MVP (Current)
 
-- replay prevention,
-- request correlation IDs,
-- richer audit event schema,
-- structured error model,
-- transport hardening with mTLS,
-- non-root container execution.
+Goal: Demonstrate architecture and execution separation
 
-## Phase 3 — Hardware-Integrated Prototype
+- Relay / Endpoint separation
+- Token-based execution flow
+- Basic validation and audit logging
+- Dockerized local environment
 
-- abstract executor interface,
-- HSM-backed signing adapter,
-- policy-to-key binding,
-- key usage policy enforcement,
-- operational runbooks.
+---
 
-## Phase 4 — Production Candidate
+## Phase 2 — Security Hardening
 
-- secret manager integration,
-- durable audit storage,
-- RBAC and operator identity,
-- approval workflows,
-- monitoring and alerting,
-- formal threat review and security test coverage.
+Goal: Introduce real security guarantees
+
+- HSM integration for execution authority
+- Mutual TLS (mTLS) between Relay and Endpoint
+- Replay attack protection (nonce / timestamp validation)
+- Append-only audit logging (tamper-resistant)
+- Secure key management
+
+---
+
+## Phase 3 — Access Control
+
+Goal: Control who can trigger execution
+
+- Operator authentication
+- Role-Based Access Control (RBAC)
+- Policy engine for execution approval
+- Multi-signature or approval workflow
+
+---
+
+## Phase 4 — Observability & Reliability
+
+Goal: Make system production operable
+
+- Structured logging
+- Monitoring (Prometheus / Grafana)
+- Alerting system
+- Health checks and failover strategy
+
+---
+
+## Phase 5 — Production Deployment
+
+Goal: Deploy in real environment
+
+- Kubernetes deployment
+- Secure network segmentation
+- Secret management system
+- CI/CD pipeline
+
+---
+
+## Phase 6 — Advanced Features
+
+Goal: Expand system capability
+
+- Multi-asset support
+- Cross-chain execution
+- Risk scoring / AI validation layer
+- Integration with financial systems
+
+---
+
+## Summary
+
+The MVP proves:
+
+👉 Execution can be separated from orchestration
+
+Future phases focus on:
+
+👉 Making that separation secure, verifiable, and production-ready

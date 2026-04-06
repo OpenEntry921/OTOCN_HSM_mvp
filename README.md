@@ -1,198 +1,153 @@
-# HSM_MVP
+# HSM MVP (Relay–Endpoint Architecture Prototype)
 
-Prototype repository for an **execution-path-isolated authorization model** in a digital asset custody environment.
+This project demonstrates a **secure transaction execution architecture**
+based on the separation of responsibilities between a **relay layer**
+and an **execution endpoint layer**.
 
-This project is designed to look and behave like a credible early-stage engineering repo rather than a slide-only concept. It demonstrates how an external request can be accepted by a policy relay, translated into a short-lived execution token, and then independently verified by a separate endpoint before a sensitive action is simulated.
+The goal is to show how execution authority can be isolated from
+request orchestration, reducing systemic risk in financial or
+sensitive transaction systems.
 
-## What this repository shows
+---
 
-- **Service separation** between request intake and execution approval.
-- **Short-lived signed token flow** instead of direct server-to-executor trust.
-- **Independent verification boundary** at the endpoint.
-- **Audit-friendly request lifecycle** with structured log events.
-- **Containerized local environment** for quick review and demo.
+## 🧠 Core Idea
 
-## Why the design matters
+Traditional systems allow application servers to directly execute
+sensitive operations.
 
-The security claim behind this repository is simple:
+This architecture enforces:
 
-> Even if the upstream application path is compromised, sensitive execution should still require an independently verifiable authorization artifact.
+- Relay = request validation + orchestration
+- Endpoint = execution authority (isolated)
 
-In this MVP, that artifact is a signed execution token validated by the endpoint service.
+👉 The server **never directly executes critical actions**
 
-## Demo architecture
+---
 
-```text
-Client
-  │
-  ▼
-Relay Service
-  ├─ validates policy
-  ├─ issues short-lived execution token
-  ├─ writes audit trail
-  └─ forwards approved request
-        │
-        ▼
-Endpoint Service
-  ├─ verifies token signature and expiry
-  ├─ checks claim-to-request match
-  └─ simulates execution
+## 🏗️ Architecture Overview
+
+Client → Relay → Endpoint → Execution  
+             ↓  
+         Audit Log  
+
+### Components
+
+- **Relay**
+  - Validates request
+  - Applies policy checks
+  - Signs execution token
+  - Records audit log
+
+- **Endpoint**
+  - Verifies token
+  - Executes request
+  - No external exposure
+
+- **Shared**
+  - Common schemas
+  - Crypto utilities
+
+---
+
+## ⚙️ Tech Stack
+
+- Python 3.10
+- FastAPI
+- Docker / Docker Compose
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone repository
+
+```bash
+git clone <your-repo-url>
+cd HSM_mvp
 ```
 
-## Repository structure
-
-```text
-HSM_mvp/
-├── .env.example
-├── .gitignore
-├── docker-compose.yml
-├── Makefile
-├── README.md
-├── requirements-dev.txt
-├── LICENSE
-├── SECURITY.md
-├── CONTRIBUTING.md
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── relay/
-│   ├── Dockerfile
-│   ├── __init__.py
-│   ├── audit.py
-│   ├── main.py
-│   ├── policy.py
-│   ├── requirements.txt
-│   └── token_service.py
-├── endpoint/
-│   ├── Dockerfile
-│   ├── __init__.py
-│   ├── executor.py
-│   ├── main.py
-│   ├── requirements.txt
-│   └── verifier.py
-├── shared/
-│   ├── __init__.py
-│   ├── crypto.py
-│   └── schemas.py
-├── docs/
-│   ├── api.md
-│   ├── architecture.md
-│   ├── deployment.md
-│   ├── roadmap.md
-│   ├── security_model.md
-│   ├── sequence_flow.md
-│   └── threat_model.md
-├── examples/
-│   └── sample_request.json
-├── tests/
-│   ├── test_endpoint.py
-│   └── test_relay_policy.py
-└── logs/
-```
-
-## Core services
-
-### Relay service
-
-The relay service is the intake and authorization layer.
-
-Responsibilities:
-- accept execution requests,
-- evaluate policy rules,
-- issue short-lived signed tokens,
-- forward approved requests to the endpoint,
-- record audit events.
-
-### Endpoint service
-
-The endpoint service is the independent execution boundary.
-
-Responsibilities:
-- verify token authenticity and expiry,
-- validate that token claims match the request payload,
-- simulate the final privileged action.
-
-### Shared module
-
-The shared package contains reusable models and cryptographic helpers used by both services.
-
-## Local quick start
-
-### 1. Copy environment file
+### 2. Environment setup
 
 ```bash
 cp .env.example .env
 ```
 
-### 2. Build and start the stack
+### 3. Run services
 
 ```bash
 docker compose up --build
 ```
 
-### 3. Verify health endpoints
+### 4. Verify services
 
-- Relay: `http://localhost:8000/health`
-- Endpoint: `http://localhost:8001/health`
+- Relay: http://localhost:8000/health
+- Endpoint: http://localhost:8001/health
 
-### 4. Send a sample request
+---
 
-```bash
-curl -X POST http://localhost:8000/request \
-  -H "Content-Type: application/json" \
-  -d @examples/sample_request.json
-```
+## 🔁 Example Flow
 
-Expected successful response:
+1. Client sends request to Relay
+2. Relay validates and signs token
+3. Relay forwards to Endpoint
+4. Endpoint verifies token and executes
+5. Result returned to client
 
-```json
-{
-  "request_id": "req-001",
-  "status": "success",
-  "detail": "Simulated signing completed for wallet_A"
-}
-```
+---
 
-## Demo APIs
+## 📂 Project Structure
 
-Once the containers are running, FastAPI docs are available at:
+HSM_mvp/
+├── relay/
+├── endpoint/
+├── shared/
+├── docs/
+├── docker-compose.yml
 
-- Relay Swagger UI: `http://localhost:8000/docs`
-- Endpoint Swagger UI: `http://localhost:8001/docs`
+---
 
-## Current limitations
+## ⚠️ Limitations (Current MVP Scope)
 
-This MVP intentionally does **not** include:
+This project is a **functional MVP prototype** designed to demonstrate
+architectural separation.
 
-- real HSM hardware integration,
-- mutual TLS,
-- hardware-backed key custody,
-- replay cache,
-- RBAC,
-- secret manager integration,
-- persistent audit backends,
-- production observability.
+The following production-grade features are intentionally not implemented:
 
-That is not a flaw in documentation. It is the boundary of the prototype.
+- No real HSM integration (execution is simulated)
+- No mutual TLS (mTLS) between services
+- No replay attack protection
+- No append-only or tamper-proof audit storage
+- No operator authentication or RBAC
 
-## What makes the next version more credible
+These features are planned for future development.
 
-1. Replace the in-memory shared secret with KMS or HSM-backed signing.
-2. Add replay protection using Redis or a durable nonce store.
-3. Add mTLS between relay and endpoint.
-4. Move audit logs to append-only external storage.
-5. Introduce role-based approval policy and operator identity.
-6. Replace the simulated executor with a hardware adapter interface.
+---
 
-## Intended audience
+## 🗺️ Roadmap
 
-This repo is useful for:
+See: `docs/roadmap.md`
 
-- internal architecture review,
-- investor or partner technical diligence,
-- security model discussion,
-- early engineering validation before hardware integration.
+---
 
-## License
+## 📄 Documentation
 
-MIT License.
+- Architecture: `docs/architecture.md`
+- Flow: `docs/flow.md`
+- API: `docs/api.md`
+
+---
+
+## 🧩 Design Philosophy
+
+This project focuses on:
+
+- Execution isolation
+- Minimal trust assumptions
+- Clear separation of responsibilities
+
+---
+
+## 📌 Status
+
+- MVP prototype (development stage)
+- Not production-ready
