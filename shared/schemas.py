@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from time import time
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class ExecutionRequest(BaseModel):
@@ -9,7 +10,7 @@ class ExecutionRequest(BaseModel):
     target: str
     amount: Optional[float] = None
     requester: str
-    timestamp: float = time()
+    timestamp: float = Field(default_factory=time)
 
 
 class PolicyDecision(BaseModel):

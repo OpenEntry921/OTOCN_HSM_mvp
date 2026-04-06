@@ -2,20 +2,17 @@
 
 ## Relay Server API
 
-Base URL
+**Base URL**
 
-
+```text
 http://localhost:8000
-
----
-
-## Request Execution
+```
 
 ### POST /request
 
 Submit an execution request.
 
-Request:
+**Request**
 
 ```json
 {
@@ -25,20 +22,43 @@ Request:
   "amount": 1000,
   "requester": "client_app"
 }
+```
 
-Response:
+**Successful response**
+
+```json
 {
   "request_id": "req-001",
   "status": "success",
-  "detail": "Simulated signing completed"
+  "detail": "Simulated signing completed for wallet_A"
 }
-Endpoint Server API
-Base URL
+```
 
+**Policy denied**
+
+```json
+{
+  "detail": "Target not whitelisted"
+}
+```
+
+---
+
+## Endpoint Server API
+
+**Base URL**
+
+```text
 http://localhost:8001
-POST /execute
-Called internally by the relay server.
-Payload:
+```
+
+### POST /execute
+
+This endpoint is intended for internal relay-to-endpoint calls.
+
+**Payload**
+
+```json
 {
   "request": {
     "request_id": "req-001",
@@ -48,19 +68,22 @@ Payload:
   },
   "execution_token": "token-value"
 }
+```
 
-Response:
+**Successful response**
+
+```json
 {
   "request_id": "req-001",
   "status": "success",
-  "detail": "Execution completed"
+  "detail": "Simulated signing completed for wallet_A"
 }
-Error Responses
-403 Policy Denied
+```
+
+**Invalid token**
+
+```json
 {
-  "detail": "Target not whitelisted"
+  "detail": "invalid signature"
 }
-401 Invalid Token
-{
-  "detail": "Token verification failed"
-}
+```

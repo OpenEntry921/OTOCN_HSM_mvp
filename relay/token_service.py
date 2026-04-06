@@ -1,23 +1,11 @@
-import hmac
-import hashlib
-import base64
-import json
-import time
+import os
 
-SECRET_KEY = b"replace-this-with-strong-secret"
+from shared.crypto import sign_payload
 
 
-def issue_token(payload: dict, ttl_seconds: int = 30) -> dict:
-    payload = payload.copy()
-    payload["exp"] = int(time.time()) + ttl_seconds
+DEFAULT_TTL = int(os.getenv("TOKEN_TTL_SECONDS", "30"))
 
-    raw = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
-    sig = hmac.new(SECRET_KEY, raw, hashlib.sha256).digest()
 
-    token = base64.urlsafe_b64encode(raw).decode() + "." + \
-            base64.urlsafe_b64encode(sig).decode()
-
-    return {
-        "token": token,
-        "expires_at": payload["exp"]
-    }
+def issue_token(payload: dict, ttl_seconds: int | None = None) -> dict:
+    ttl = ttl_seconds if ttl_seconds is not None else DEFAULT_TTL
+    return sign_payload(payload, ttl_seconds=ttl)

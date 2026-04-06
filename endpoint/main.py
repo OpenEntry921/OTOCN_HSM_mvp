@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from verifier import verify_token
-from executor import execute_action
+from endpoint.executor import execute_action
+from endpoint.verifier import verify_token
 
-app = FastAPI(title="Endpoint Server")
+app = FastAPI(title="Endpoint Server", version="0.1.0")
 
 
 class ExecutePayload(BaseModel):
@@ -12,21 +12,26 @@ class ExecutePayload(BaseModel):
     execution_token: str
 
 
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok", "service": "endpoint"}
+
+
 @app.post("/execute")
 def execute(payload: ExecutePayload):
     try:
         token_data = verify_token(payload.execution_token)
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
 
     req = payload.request
 
-    if token_data["request_id"] != req["request_id"]:
-        raise HTTPException(status_code=400, detail="Request ID mismatch")
+    for field in ("request_id", "action", "target", "requester"):
+        if token_data.get(field) != req.get(field):
+            raise HTTPException(status_code=400, detail=f"Token claim mismatch: {field}")
 
-    result = execute_action(
+    return execute_action(
         action=req["action"],
         target=req["target"],
-        request_id=req["request_id"]
+        request_id=req["request_id"],
     )
-    return result

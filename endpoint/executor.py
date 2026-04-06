@@ -3,18 +3,18 @@ def execute_action(action: str, target: str, request_id: str) -> dict:
         return {
             "request_id": request_id,
             "status": "success",
-            "detail": f"Simulated signing completed for {target}"
+            "detail": f"Simulated signing completed for {target}",
         }
 
     if action == "approve_transfer":
         return {
             "request_id": request_id,
             "status": "success",
-            "detail": f"Simulated transfer approval completed for {target}"
+            "detail": f"Simulated transfer approval completed for {target}",
         }
 
     return {
         "request_id": request_id,
         "status": "failed",
-        "detail": "Unsupported action"
+        "detail": f"Unsupported action: {action}",
     }

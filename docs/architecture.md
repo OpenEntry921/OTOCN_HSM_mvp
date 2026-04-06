@@ -2,146 +2,65 @@
 
 ## Overview
 
-HSM_MVP demonstrates a secure execution architecture that separates the “request layer” from the “execution layer”.
+HSM_MVP demonstrates a two-stage authorization and execution flow:
 
-This design prevents compromised application servers from directly executing sensitive operations.
+1. **Relay** receives and approves requests.
+2. **Endpoint** independently verifies authorization before execution.
+
+The design goal is not “perfect security.”
+The design goal is to reduce the blast radius of a compromised application tier.
 
 ---
 
-## Architecture Diagram
+## Logical flow
 
-
+```text
 Client
-↓
-Relay Server
-↓
-Policy Engine
-↓
-Execution Token Issuer
-↓
-Secure Channel
-↓
-Endpoint Verifier
-↓
-Execution Engine
+  |
+  v
+Relay API
+  |
+  +--> Policy validation
+  |
+  +--> Token issuance
+  |
+  v
+Endpoint API
+  |
+  +--> Token verification
+  |
+  v
+Execution engine
+```
 
 ---
 
-## Key Security Concepts
+## Security boundary
 
-### Execution Path Isolation
+The endpoint represents the **execution authority boundary**.
 
-Execution requests cannot reach the endpoint directly.
-
-All requests must pass through:
-
-1. Relay server
-2. Policy engine
-3. Token verification
+A caller reaching the relay does not automatically gain execution rights.
+The relay must first create a valid short-lived token, and the endpoint must still verify that token independently.
 
 ---
 
-### Token-Based Execution Authorization
+## Design choices in this MVP
 
-Instead of allowing direct execution calls, the relay server issues a **short-lived execution token**.
-
-The endpoint verifies this token before performing any action.
-
----
-
-### Endpoint Autonomy
-
-The endpoint independently verifies authorization.
-
-This prevents the main server from becoming a single point of compromise.
+- relay and endpoint are separated services,
+- token signing and verification are centralized in shared helpers,
+- the endpoint verifies token claims against the request body,
+- audit logs are persisted to a mounted logs directory,
+- environment variables are used for secret and endpoint configuration.
 
 ---
 
-### Assume Breach Model
+## Non-goals
 
-The architecture assumes that the relay server or application layer could be compromised.
+This repository does not yet model:
 
-Security is enforced at the endpoint level.
-
----
-
-## System Components
-
-### Client
-
-External application initiating requests.
-
----
-
-### Relay Server
-
-Functions:
-
-- request intake
-- policy validation
-- execution token issuance
-- request forwarding
-
----
-
-### Policy Engine
-
-Responsible for validating requests based on predefined rules.
-
-Example rules:
-
-- transaction limit
-- target whitelist
-- operation type validation
-
----
-
-### Execution Token Service
-
-Creates short-lived tokens representing approved operations.
-
-Token properties:
-
-- expiration timestamp
-- request ID
-- authorized action
-
----
-
-### Endpoint Server
-
-The endpoint verifies tokens and executes allowed operations.
-
-It acts as the **execution authority boundary**.
-
----
-
-### Execution Engine
-
-Handles final execution logic such as:
-
-- simulated transaction signing
-- approval actions
-
----
-
-## Audit Logging
-
-All events are logged:
-
-- request received
-- policy decision
-- token issued
-- execution result
-
----
-
-## Limitations
-
-This MVP does not include:
-
-- real blockchain integration
-- HSM connection
-- production cryptographic security
-
-It demonstrates architectural concepts only.
+- network-level trust boundaries,
+- hardware-backed key use,
+- certificate management,
+- secret rotation,
+- replay cache,
+- operational failover.

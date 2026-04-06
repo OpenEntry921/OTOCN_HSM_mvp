@@ -1,12 +1,27 @@
 # Security Model
 
-The architecture follows the Assume Breach model.
+The MVP follows an **assume breach** mindset.
 
-Security is enforced through:
+That means the application-facing layer is treated as potentially compromiseable, and sensitive execution should still require a second authorization boundary.
 
-- execution authority isolation
-- token-based authorization
-- endpoint verification
-- audit logging
+## Security controls represented in the MVP
 
-Sensitive operations are executed only after endpoint-side authorization.
+- short-lived signed execution tokens,
+- endpoint-side token verification,
+- token claim matching against the forwarded request,
+- explicit policy checks before forwarding,
+- audit logging of key stages.
+
+## What this does well
+
+- demonstrates service separation,
+- makes execution conditional on more than a single API call,
+- gives a clean foundation for explaining a future HSM adapter.
+
+## What this does not solve yet
+
+- relay impersonation at the network layer,
+- token replay inside the TTL window,
+- secret leakage from environment variables,
+- operator abuse,
+- real transaction signing security.
