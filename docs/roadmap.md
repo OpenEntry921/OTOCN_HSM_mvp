@@ -75,8 +75,8 @@ Goal: Expand system capability
 
 The MVP proves:
 
-👉 Execution can be separated from orchestration
+--> Execution can be separated from orchestration
 
 Future phases focus on:
 
-👉 Making that separation secure, verifiable, and production-ready
+--> Making that separation secure, verifiable, and production-ready

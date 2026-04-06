@@ -10,7 +10,7 @@ sensitive transaction systems.
 
 ---
 
-## 🧠 Core Idea
+## Core Idea
 
 Traditional systems allow application servers to directly execute
 sensitive operations.
@@ -24,7 +24,7 @@ This architecture enforces:
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 Client → Relay → Endpoint → Execution  
              ↓  
@@ -49,7 +49,7 @@ Client → Relay → Endpoint → Execution
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 - Python 3.10
 - FastAPI
@@ -57,7 +57,7 @@ Client → Relay → Endpoint → Execution
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone repository
 
@@ -85,7 +85,7 @@ docker compose up --build
 
 ---
 
-## 🔁 Example Flow
+## Example Flow
 
 1. Client sends request to Relay
 2. Relay validates and signs token
@@ -95,7 +95,7 @@ docker compose up --build
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 HSM_mvp/
 ├── relay/
@@ -106,7 +106,7 @@ HSM_mvp/
 
 ---
 
-## ⚠️ Limitations (Current MVP Scope)
+## Limitations (Current MVP Scope)
 
 This project is a **functional MVP prototype** designed to demonstrate
 architectural separation.
@@ -123,13 +123,13 @@ These features are planned for future development.
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 See: `docs/roadmap.md`
 
 ---
 
-## 📄 Documentation
+## Documentation
 
 - Architecture: `docs/architecture.md`
 - Flow: `docs/flow.md`
@@ -137,7 +137,7 @@ See: `docs/roadmap.md`
 
 ---
 
-## 🧩 Design Philosophy
+## Design Philosophy
 
 This project focuses on:
 
@@ -147,7 +147,7 @@ This project focuses on:
 
 ---
 
-## 📌 Status
+## Status
 
 - MVP prototype (development stage)
 - Not production-ready
