@@ -1,6 +1,6 @@
 # API Documentation
 
-## Relay Server API
+## Relay Service
 
 **Base URL**
 
@@ -8,11 +8,24 @@
 http://localhost:8000
 ```
 
+### GET /health
+
+Returns service liveness.
+
+**Response**
+
+```json
+{
+  "status": "ok",
+  "service": "relay"
+}
+```
+
 ### POST /request
 
-Submit an execution request.
+Submits an execution request to the relay.
 
-**Request**
+**Request body**
 
 ```json
 {
@@ -34,7 +47,9 @@ Submit an execution request.
 }
 ```
 
-**Policy denied**
+**Possible error responses**
+
+Policy denied:
 
 ```json
 {
@@ -42,9 +57,15 @@ Submit an execution request.
 }
 ```
 
----
+Endpoint failure:
 
-## Endpoint Server API
+```json
+{
+  "detail": "Endpoint request failed"
+}
+```
+
+## Endpoint Service
 
 **Base URL**
 
@@ -52,11 +73,24 @@ Submit an execution request.
 http://localhost:8001
 ```
 
+### GET /health
+
+Returns service liveness.
+
+**Response**
+
+```json
+{
+  "status": "ok",
+  "service": "endpoint"
+}
+```
+
 ### POST /execute
 
-This endpoint is intended for internal relay-to-endpoint calls.
+Internal relay-to-endpoint execution call.
 
-**Payload**
+**Request body**
 
 ```json
 {
@@ -64,7 +98,9 @@ This endpoint is intended for internal relay-to-endpoint calls.
     "request_id": "req-001",
     "action": "sign_tx",
     "target": "wallet_A",
-    "requester": "client_app"
+    "amount": 1000,
+    "requester": "client_app",
+    "timestamp": 1710000000.0
   },
   "execution_token": "token-value"
 }
@@ -80,10 +116,20 @@ This endpoint is intended for internal relay-to-endpoint calls.
 }
 ```
 
-**Invalid token**
+**Possible error responses**
+
+Invalid token:
 
 ```json
 {
   "detail": "invalid signature"
+}
+```
+
+Token claim mismatch:
+
+```json
+{
+  "detail": "Token claim mismatch: target"
 }
 ```
