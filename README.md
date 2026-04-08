@@ -20,7 +20,7 @@ This architecture enforces:
 - Relay = request validation + orchestration
 - Endpoint = execution authority (isolated)
 
-👉 The server **never directly executes critical actions**
+The server **never directly executes critical actions
 
 ---
 
