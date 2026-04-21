@@ -1,153 +1,149 @@
-# HSM MVP (Relay–Endpoint Architecture Prototype)
+# HSM MVP — Execution-Separated Custody Prototype
 
-This project demonstrates a **secure transaction execution architecture**
-based on the separation of responsibilities between a **relay layer**
-and an **execution endpoint layer**.
+## Overview
 
-The goal is to show how execution authority can be isolated from
-request orchestration, reducing systemic risk in financial or
-sensitive transaction systems.
+This repository contains an MVP prototype for an execution-separated digital asset custody model.
 
----
+The prototype explores a control architecture where application-layer coordination and execution authority are separated through independent policy evaluation and execution validation.
 
-## Core Idea
-
-Traditional systems allow application servers to directly execute
-sensitive operations.
-
-This architecture enforces:
-
-- Relay = request validation + orchestration
-- Endpoint = execution authority (isolated)
-
-The server **never directly executes critical actions
+The design objective is to reduce execution risk in digital asset operations.
 
 ---
 
-## Architecture Overview
-
-Client → Relay → Endpoint → Execution  
-             ↓  
-         Audit Log  
+## Core Architecture
 
 ### Components
 
-- **Relay**
-  - Validates request
-  - Applies policy checks
-  - Signs execution token
-  - Records audit log
+### 1. Relay Layer
+Responsible for:
 
-- **Endpoint**
-  - Verifies token
-  - Executes request
-  - No external exposure
+- Request validation
+- Policy evaluation
+- Execution token issuance
+- Audit event generation
 
-- **Shared**
-  - Common schemas
-  - Crypto utilities
+The Relay coordinates requests but does not directly perform sensitive execution.
 
 ---
 
-## Tech Stack
+### 2. Endpoint Layer
+Responsible for:
 
-- Python 3.10
-- FastAPI
-- Docker / Docker Compose
+- Independent execution token verification
+- Execution request validation
+- Final action execution
+
+The Endpoint only executes when policy and token conditions are satisfied.
 
 ---
 
-## Getting Started
+### 3. Audit Layer
 
-### 1. Clone repository
+Captures:
 
-```bash
-git clone <your-repo-url>
-cd HSM_mvp
+- Request events
+- Policy decisions
+- Execution events
+
+Designed to support auditability and operational traceability.
+
+---
+
+## Design Principle
+
+Core principle:
+
+**Application servers do not directly perform critical execution.**
+
+Execution requires:
+
+- Policy validation
+- Execution token issuance
+- Independent endpoint verification
+
+This creates an execution authority boundary between orchestration and execution.
+
+---
+
+## Threat Model (Current Scope)
+
+This MVP is designed to help mitigate:
+
+- Unauthorized execution attempts
+- Server-side logic abuse
+- Single-layer execution authority risk
+
+---
+
+## Current MVP Scope
+
+Implemented:
+
+- Relay–Endpoint prototype flow
+- Policy evaluation logic
+- Execution token validation
+- Audit logging
+
+---
+
+## Planned Scope (Not Yet Implemented)
+
+Planned for future development:
+
+- HSM integration
+- mTLS transport hardening
+- Replay protection
+- Failover handling
+- Production-grade key isolation
+
+---
+
+## Explicit Non-Goals (Current MVP)
+
+This repository does NOT currently provide:
+
+- Production custody system
+- Complete HSM implementation
+- Certified security module
+- Production deployment architecture
+
+This is an MVP / prototype only.
+
+---
+
+## Repository Structure
+
+```text
+/docs
+  architecture.md
+  threat-model.md
+
+/tests
+  policy-tests
+
+/examples
+  demo-flow.md
 ```
-
-### 2. Environment setup
-
-```bash
-cp .env.example .env
-```
-
-### 3. Run services
-
-```bash
-docker compose up --build
-```
-
-### 4. Verify services
-
-- Relay: http://localhost:8000/health
-- Endpoint: http://localhost:8001/health
-
----
-
-## Example Flow
-
-1. Client sends request to Relay
-2. Relay validates and signs token
-3. Relay forwards to Endpoint
-4. Endpoint verifies token and executes
-5. Result returned to client
-
----
-
-## Project Structure
-
-HSM_mvp/
-├── relay/
-├── endpoint/
-├── shared/
-├── docs/
-├── docker-compose.yml
-
----
-
-## Limitations (Current MVP Scope)
-
-This project is a **functional MVP prototype** designed to demonstrate
-architectural separation.
-
-The following production-grade features are intentionally not implemented:
-
-- No real HSM integration (execution is simulated)
-- No mutual TLS (mTLS) between services
-- No replay attack protection
-- No append-only or tamper-proof audit storage
-- No operator authentication or RBAC
-
-These features are planned for future development.
 
 ---
 
 ## Roadmap
 
-See: `docs/roadmap.md`
+Phase 1
+- MVP prototype
+- Policy flow validation
 
----
+Phase 2
+- HSM integration
+- Transport hardening
 
-## Documentation
-
-- Architecture: `docs/architecture.md`
-- Flow: `docs/flow.md`
-- API: `docs/api.md`
-
----
-
-## Design Philosophy
-
-This project focuses on:
-
-- Execution isolation
-- Minimal trust assumptions
-- Clear separation of responsibilities
+Phase 3
+- Production-grade architecture
 
 ---
 
 ## Status
 
-- MVP prototype (development stage)
-- Not production-ready
+Prototype / Experimental
+
+Not production ready.
