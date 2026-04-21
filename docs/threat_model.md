@@ -1,38 +1,74 @@
 # Threat Model
 
-## Assumptions
+## Scope
 
-- external clients may be malicious,
-- the relay service may be probed or partially compromised,
-- internal HTTP traffic should not be treated as inherently trusted,
-- sensitive execution should require more than simple reachability.
+This MVP considers risks related to execution control and authority separation.
 
-## Threats considered
+The model focuses on reducing structural execution risks rather than providing a complete production security model.
 
-### 1. Unauthorized execution request
-A caller attempts to trigger endpoint execution without relay authorization.
+---
 
-**Mitigation in MVP:** endpoint requires a valid signed token.
+## Threats Considered
 
-### 2. Request tampering after approval
-A request body is modified between relay approval and endpoint execution.
+## 1. Unauthorized Execution Attempts
 
-**Mitigation in MVP:** endpoint compares token claims with request payload.
+Risk:
 
-### 3. Expired token usage
-A token is replayed after its intended lifetime.
+A request attempts to trigger execution without satisfying control conditions.
 
-**Mitigation in MVP:** token includes `exp` claim and endpoint enforces expiry.
+Mitigation:
 
-## Threats not fully mitigated
+- policy validation required  
+- execution token required  
+- independent endpoint verification required
 
-### Replay within token TTL
-A valid token reused within the active TTL can still pass.
-This MVP does not maintain nonce or replay cache state.
+---
 
-### Shared secret compromise
-If the token signing secret is leaked, token trust collapses.
-This is why a real system needs proper secret storage and rotation.
+## 2. Server-Side Logic Abuse
 
-### Network-layer spoofing
-This MVP does not implement mTLS or service identity verification.
+Risk:
+
+A coordination component is misused or compromised.
+
+Mitigation:
+
+- Relay does not directly perform execution  
+- Endpoint performs independent verification  
+- execution requires multiple conditions
+
+---
+
+## 3. Single-Layer Execution Authority Risk
+
+Risk:
+
+One component alone can trigger sensitive execution.
+
+Mitigation:
+
+- coordination and execution authority are separated  
+- execution requires layered approval path
+
+---
+
+## Out of Scope (Current MVP)
+
+The following are not fully addressed in the current prototype:
+
+- HSM compromise scenarios  
+- transport-layer attacks  
+- replay attacks  
+- distributed failover scenarios  
+- production-grade insider threat models
+
+These are planned for future phases.
+
+---
+
+## Security Goal
+
+Primary goal:
+
+Reduce structural execution risk through authority separation.
+
+This is the core security objective of the current MVP.
