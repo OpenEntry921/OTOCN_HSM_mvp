@@ -1,66 +1,119 @@
-# HSM_MVP Architecture
+# Architecture Overview
 
-## Overview
+## Execution-Separated Custody Prototype Architecture
 
-HSM_MVP demonstrates a two-stage authorization and execution flow:
+This prototype is designed to separate coordination logic from execution authority.
 
-1. **Relay** receives and approves requests.
-2. **Endpoint** independently verifies authorization before execution.
-
-The design goal is not “perfect security.”
-The design goal is to reduce the blast radius of a compromised application tier.
+The objective is to reduce execution risk by ensuring that no single application component can independently trigger critical execution.
 
 ---
 
-## Logical flow
+## Logical Flow
 
 ```text
 Client
-  |
-  v
-Relay API
-  |
-  +--> Policy validation
-  |
-  +--> Token issuance
-  |
-  v
-Endpoint API
-  |
-  +--> Token verification
-  |
-  v
-Execution engine
+  ↓
+Relay Layer
+  ↓
+Policy Evaluation
+  ↓
+Execution Token Issuance
+  ↓
+Endpoint Verification
+  ↓
+Execution
 ```
 
 ---
 
-## Security boundary
+## Component Roles
 
-The endpoint represents the **execution authority boundary**.
+### Client
 
-A caller reaching the relay does not automatically gain execution rights.
-The relay must first create a valid short-lived token, and the endpoint must still verify that token independently.
+Initiates a request.
 
----
+Examples:
 
-## Design choices in this MVP
+- transaction request
+- operational request
+- policy-controlled action
 
-- relay and endpoint are separated services,
-- token signing and verification are centralized in shared helpers,
-- the endpoint verifies token claims against the request body,
-- audit logs are persisted to a mounted logs directory,
-- environment variables are used for secret and endpoint configuration.
+The client does not directly interact with the execution layer.
 
 ---
 
-## Non-goals
+### Relay Layer
 
-This repository does not yet model:
+The Relay is responsible for:
 
-- network-level trust boundaries,
-- hardware-backed key use,
-- certificate management,
-- secret rotation,
-- replay cache,
-- operational failover.
+- receiving requests  
+- validating request structure  
+- evaluating policy conditions  
+- issuing execution tokens  
+- generating audit events
+
+The Relay coordinates requests.
+
+It does not directly perform critical execution.
+
+---
+
+### Policy Evaluation
+
+Policy logic determines whether a request satisfies predefined control conditions.
+
+Examples:
+
+- authorization checks  
+- policy rules  
+- risk conditions
+
+Only approved requests proceed.
+
+---
+
+### Execution Token Issuance
+
+If policy conditions are satisfied:
+
+- an execution token is issued
+
+The execution token is used as a required condition for downstream execution.
+
+---
+
+### Endpoint Verification
+
+The Endpoint independently verifies:
+
+- execution token validity  
+- request integrity  
+- execution conditions
+
+Execution only proceeds if verification succeeds.
+
+---
+
+### Execution
+
+Sensitive execution occurs only after:
+
+- policy approval  
+- token issuance  
+- independent endpoint verification
+
+---
+
+## Core Principle
+
+**Application-layer coordination and execution authority are separated.**
+
+No single coordination component independently controls critical execution.
+
+---
+
+## Current Scope
+
+This is an MVP prototype architecture.
+
+Production features such as HSM integration, transport hardening, and replay protection are outside the current scope.
