@@ -48,6 +48,7 @@ def handle_request(req: ExecutionRequest):
         "request_id": req.request_id,
         "action": req.action,
         "target": req.target,
+        "amount": req.amount,
         "requester": req.requester,
     }
     token_info = issue_token(token_payload)
