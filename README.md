@@ -6,6 +6,7 @@ This repository demonstrates a simple Relay + Endpoint flow for **policy-based e
 
 > Status: MVP prototype. Not production-ready.
 > Runtime: Python 3.9 compatible.
+> Tested on Python 3.9.
 
 ## Why this exists
 
