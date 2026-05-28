@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -22,7 +23,7 @@ def banner(title: str) -> None:
     print(f"\n=== {title} ===")
 
 
-def event(message: str, detail: str | None = None) -> None:
+def event(message: str, detail: Optional[str] = None) -> None:
     if detail:
         print(f"{message}: {detail}")
     else:
@@ -53,7 +54,7 @@ def issue_request_bound_token(req: ExecutionRequest, ttl_seconds: int = 30) -> d
     )
 
 
-def relay_authorize(req: ExecutionRequest, ttl_seconds: int = 30) -> dict | None:
+def relay_authorize(req: ExecutionRequest, ttl_seconds: int = 30) -> Optional[dict]:
     event("REQUEST RECEIVED", f"{req.request_id} amount={req.amount} destination={req.target}")
     write_audit(
         {
