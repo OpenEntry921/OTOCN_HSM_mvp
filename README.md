@@ -5,6 +5,7 @@ A demo-focused **MVP prototype** that shows **execution authority separation**: 
 This repository demonstrates a simple Relay + Endpoint flow for **policy-based execution control**, **independent endpoint verification**, and **auditability**. It is intentionally small and direct so that the execution boundary is easy to understand in a demo.
 
 > Status: MVP prototype. Not production-ready.
+> Runtime: Python 3.9 compatible.
 
 ## Why this exists
 

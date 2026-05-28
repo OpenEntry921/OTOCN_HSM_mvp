@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, Optional
 
 from endpoint.executor import execute_action
 from endpoint.verifier import verify_token
@@ -8,10 +8,10 @@ BOUND_TOKEN_FIELDS = ("request_id", "action", "target", "amount", "requester")
 
 
 def process_execution(
-    request: dict[str, Any],
+    request: Dict[str, Any],
     execution_token: str,
-    audit_path: str | None = None,
-) -> dict[str, Any]:
+    audit_path: Optional[str] = None,
+) -> Dict[str, Any]:
     """Verify a request-bound execution token and simulate endpoint execution.
 
     The Endpoint does its own verification instead of trusting the Relay-forwarded
