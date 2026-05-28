@@ -1,198 +1,92 @@
 # Demo Scenario — Execution-Separated Custody MVP
 
-## Demo Objective
+## Objective
 
-Demonstrate that:
+Show an **MVP prototype** where application servers do not directly perform critical execution. The demo highlights:
 
-1. Application systems cannot directly execute sensitive asset operations.
-2. Policy evaluation and execution authority are separated.
-3. Execution only occurs after independent verification.
-4. All critical events are auditable.
+- **execution authority separation**,
+- **policy-based execution control**,
+- **independent endpoint verification**,
+- **auditability**,
+- a clear path toward **future HSM integration**.
 
----
+## Scenario A — 정상 요청 / Valid request
 
-# Core Story
+### Input
 
-Traditional systems often allow application servers to directly execute asset operations once credentials or internal authority are compromised.
+- action: `approve_transfer`
+- amount: `1000.0`
+- destination: `wallet_A`
+- requester: `client_app`
 
-This MVP demonstrates a different architecture:
+### Expected flow
 
-- The application requests execution.
-- The Relay validates policy.
-- The Relay issues a constrained execution token.
-- The Endpoint independently verifies the token.
-- The Endpoint decides whether execution is allowed.
+1. Client creates the execution request.
+2. Relay prints `REQUEST RECEIVED`.
+3. Relay evaluates policy and prints `POLICY PASSED`.
+4. Relay issues a request-bound execution token and prints `EXECUTION TOKEN ISSUED`.
+5. Endpoint independently verifies token signature, expiration, and request binding.
+6. Endpoint prints `ENDPOINT VERIFICATION SUCCESS`.
+7. Endpoint simulates execution and prints `EXECUTION APPROVED`.
+8. Audit events are written and `AUDIT EVENT CREATED` is printed.
 
-Execution authority is separated from orchestration.
+### Expected result
 
----
+`EXECUTED`
 
-# Demo Participants
+## Scenario B — 변조 / 비정상 요청
 
-## 1. Client Application
-Simulates:
-- Trading platform
-- Treasury system
-- Automation workflow
-- AI agent
+### B-1: Amount tampering
 
-The client initiates a withdrawal request.
+The Relay issues a token for amount `1000.0`. Before the request reaches the Endpoint, the amount is changed to `90000.0`.
 
----
+Expected flow:
 
-## 2. Relay Layer
-Responsible for:
-- Request validation
-- Policy evaluation
-- Risk checks
-- Execution token issuance
-- Audit event creation
+1. Relay policy passes for the original request.
+2. Relay issues a token bound to the original request.
+3. Demo prints `TAMPERED REQUEST DETECTED`.
+4. Endpoint compares the token claims with the modified request.
+5. Endpoint prints `ENDPOINT VERIFICATION FAILED`.
+6. Endpoint prints `EXECUTION REJECTED` with the mismatch reason.
+7. Audit event is created.
 
-The Relay DOES NOT directly execute the transfer.
+Expected result:
 
----
+`REJECTED`
 
-## 3. Endpoint Layer
-Responsible for:
-- Independent token verification
-- Validation of execution conditions
-- Final execution approval
+### B-2: Expired token
 
-The Endpoint only executes when all conditions pass.
+The Relay issues an already-expired token for demo purposes.
 
----
+Expected flow:
 
-## 4. Audit Layer
-Captures:
-- Request logs
-- Policy decisions
-- Token issuance events
-- Execution outcomes
+1. Relay policy passes.
+2. Relay issues an expired token.
+3. Endpoint checks expiration during independent verification.
+4. Endpoint prints `ENDPOINT VERIFICATION FAILED`.
+5. Endpoint prints `EXECUTION REJECTED` with `token expired`.
+6. Audit event is created.
 
-Provides operational traceability.
+Expected result:
 
----
+`REJECTED`
 
-# Demo Flow
+## Run
 
-## Scenario A — Valid Execution
+```bash
+./scripts/run_demo.sh
+```
 
-### Step 1
-Client submits withdrawal request.
+## Audit log
 
-Example:
-- Amount: 1 ETH
-- Destination: Approved wallet
-- Time: Within policy window
+The demo writes JSON lines to:
 
-Expected Result:
-- Relay accepts request.
+```text
+logs/demo_audit.log
+```
 
----
+The final section of the demo prints the audit log so reviewers can see request receipt, policy decisions, token issuance, endpoint verification, and execution or rejection outcomes.
 
-### Step 2
-Relay evaluates policy.
+## Current boundary
 
-Checks:
-- Amount limit
-- Allowed destination
-- Time restrictions
-- Request validity
-
-Expected Result:
-- Policy passes.
-
----
-
-### Step 3
-Relay issues execution token.
-
-Token properties:
-- Short-lived
-- Request-bound
-- Non-transferable
-- Policy-scoped
-
-Expected Result:
-- Token generated.
-
----
-
-### Step 4
-Endpoint independently verifies token.
-
-Checks:
-- Signature validity
-- Expiration
-- Request binding
-- Policy scope
-
-Expected Result:
-- Verification succeeds.
-
----
-
-### Step 5
-Endpoint executes operation.
-
-Expected Result:
-- Execution approved.
-- Audit event generated.
-
----
-
-# Scenario B — Invalid Execution Attempt
-
-## Attack Simulation
-
-Simulate:
-- Modified amount
-- Expired token
-- Unauthorized destination
-- Replay attempt
-
-Expected Result:
-- Endpoint rejects execution.
-- Audit event generated.
-
-Critical Point:
-Even if the application layer attempts unauthorized execution, the Endpoint still independently validates execution authority.
-
----
-
-# Key Message During Demo
-
-"The application server itself does not possess direct execution authority."
-
-This architecture reduces:
-- Single-layer compromise risk
-- Blind execution risk
-- Unauthorized automated execution
-- Centralized execution authority exposure
-
----
-
-# Recommended Live Demo Sequence
-
-1. Show architecture diagram
-2. Start Relay service
-3. Start Endpoint service
-4. Submit valid request
-5. Show token issuance
-6. Show independent verification
-7. Show successful execution
-8. Run tampered request
-9. Show rejection
-10. Show audit logs
-
-Total recommended runtime:
-5–7 minutes.
-
----
-
-# Suggested Closing Statement
-
-"This MVP demonstrates a separation model between orchestration authority and execution authority.
-
-The objective is not simply key storage.
-The objective is reducing execution risk through independent validation boundaries."
+This demo does not implement real asset signing or real HSM operations. It focuses on the control pattern: request → policy → token → independent endpoint verification → execute/reject → audit log.

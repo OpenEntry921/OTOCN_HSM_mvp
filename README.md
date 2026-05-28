@@ -1,149 +1,196 @@
-# HSM MVP — Execution-Separated Custody Prototype
+# Execution-Separated Custody MVP
 
-## Overview
+A demo-focused **MVP prototype** that shows **execution authority separation**: application servers request critical actions, but they do not directly perform critical execution.
 
-This repository contains an MVP prototype for an execution-separated digital asset custody model.
+This repository demonstrates a simple Relay + Endpoint flow for **policy-based execution control**, **independent endpoint verification**, and **auditability**. It is intentionally small and direct so that the execution boundary is easy to understand in a demo.
 
-The prototype explores a control architecture where application-layer coordination and execution authority are separated through independent policy evaluation and execution validation.
+> Status: MVP prototype. Not production-ready.
 
-The design objective is to reduce execution risk in digital asset operations.
+## Why this exists
 
----
+Many custody-style application flows place too much execution authority in the application server. If that server is misused, compromised, or incorrectly configured, critical execution may happen without a second boundary.
 
-## Core Architecture
+This prototype demonstrates a different pattern:
 
-### Components
+1. Client creates an execution request.
+2. Relay validates the request and evaluates policy.
+3. Relay issues a short-lived execution token bound to that exact request.
+4. Endpoint independently verifies the token and request binding.
+5. Endpoint executes only if verification succeeds.
+6. Rejections and approvals are written to an audit log.
 
-### 1. Relay Layer
-Responsible for:
-
-- Request validation
-- Policy evaluation
-- Execution token issuance
-- Audit event generation
-
-The Relay coordinates requests but does not directly perform sensitive execution.
-
----
-
-### 2. Endpoint Layer
-Responsible for:
-
-- Independent execution token verification
-- Execution request validation
-- Final action execution
-
-The Endpoint only executes when policy and token conditions are satisfied.
-
----
-
-### 3. Audit Layer
-
-Captures:
-
-- Request events
-- Policy decisions
-- Execution events
-
-Designed to support auditability and operational traceability.
-
----
-
-## Design Principle
-
-Core principle:
+The core message is:
 
 **Application servers do not directly perform critical execution.**
 
-Execution requires:
-
-- Policy validation
-- Execution token issuance
-- Independent endpoint verification
-
-This creates an execution authority boundary between orchestration and execution.
-
----
-
-## Threat Model (Current Scope)
-
-This MVP is designed to help mitigate:
-
-- Unauthorized execution attempts
-- Server-side logic abuse
-- Single-layer execution authority risk
-
----
-
-## Current MVP Scope
-
-Implemented:
-
-- Relay–Endpoint prototype flow
-- Policy evaluation logic
-- Execution token validation
-- Audit logging
-
----
-
-## Planned Scope (Not Yet Implemented)
-
-Planned for future development:
-
-- HSM integration
-- mTLS transport hardening
-- Replay protection
-- Failover handling
-- Production-grade key isolation
-
----
-
-## Explicit Non-Goals (Current MVP)
-
-This repository does NOT currently provide:
-
-- Production custody system
-- Complete HSM implementation
-- Certified security module
-- Production deployment architecture
-
-This is an MVP / prototype only.
-
----
-
-## Repository Structure
+## Core architecture
 
 ```text
-/docs
-  architecture.md
-  threat-model.md
-
-/tests
-  policy-tests
-
-/examples
-  demo-flow.md
+Client
+  ↓
+Relay
+  - request validation
+  - policy evaluation
+  - execution token issuance
+  - audit event creation
+  ↓
+Endpoint
+  - independent endpoint verification
+  - request/token binding check
+  - execution approval or rejection
+  - audit event creation
+  ↓
+Audit log
 ```
 
----
+## Relay and Endpoint roles
 
-## Roadmap
+### Relay
 
-Phase 1
-- MVP prototype
-- Policy flow validation
+The Relay is the policy and coordination layer.
 
-Phase 2
-- HSM integration
-- Transport hardening
+It performs:
 
-Phase 3
-- Production-grade architecture
+- request receipt,
+- simple policy checks,
+- execution token issuance,
+- audit logging.
 
----
+It does **not** directly execute the sensitive action.
 
-## Status
+### Endpoint
 
-Prototype / Experimental
+The Endpoint is the execution boundary.
 
-Not production ready.
+It performs:
+
+- token signature and expiration verification,
+- request field matching against token claims,
+- final execution approval or rejection,
+- audit logging.
+
+This is the demo's **independent endpoint verification** step.
+
+## Quick start
+
+```bash
+git clone https://github.com/OpenEntry921/OTOCN_HSM_mvp.git
+cd OTOCN_HSM_mvp
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+./scripts/run_demo.sh
+```
+
+## Demo scenarios
+
+`scripts/run_demo.sh` runs the complete local demo without requiring Docker or external services.
+
+It prints:
+
+- `REQUEST RECEIVED`
+- `POLICY PASSED`
+- `EXECUTION TOKEN ISSUED`
+- `ENDPOINT VERIFICATION SUCCESS`
+- `EXECUTION APPROVED`
+- `TAMPERED REQUEST DETECTED`
+- `ENDPOINT VERIFICATION FAILED`
+- `EXECUTION REJECTED`
+- `AUDIT EVENT CREATED`
+- final audit log output
+
+### Scenario A — 정상 요청 / Valid request
+
+Conditions:
+
+- allowed amount,
+- allowed destination,
+- valid token,
+- policy conditions satisfied.
+
+Expected result:
+
+- Relay policy passes,
+- execution token is issued,
+- Endpoint verification succeeds,
+- execution is approved as `EXECUTED`,
+- audit events are created.
+
+### Scenario B — 변조 / 비정상 요청
+
+The demo includes rejection examples for:
+
+- amount changed after token issuance,
+- expired token.
+
+The tests also cover destination tampering.
+
+Expected result:
+
+- Endpoint verification fails,
+- rejection reason is printed,
+- execution is rejected as `REJECTED`,
+- audit events are created.
+
+## Test execution
+
+```bash
+./scripts/test_demo.sh
+```
+
+The pytest suite covers:
+
+- valid request should pass policy,
+- token should be bound to original request,
+- tampered amount should be rejected,
+- tampered destination should be rejected,
+- expired token should be rejected,
+- audit event should be created.
+
+## Repository structure
+
+```text
+endpoint/              Endpoint verification and simulated execution
+relay/                 Policy evaluation, token issuance, audit writer
+shared/                Shared request schemas and token signing helpers
+docs/                  Architecture, demo, security, and operation notes
+examples/              Demo request/flow examples
+scripts/run_demo.sh    One-command demo runner
+scripts/test_demo.sh   One-command test runner
+tests/                 Pytest demo and policy tests
+logs/                  Local demo audit output (created at runtime)
+```
+
+## Current MVP scope
+
+Implemented in this MVP prototype:
+
+- Relay / Endpoint separation,
+- policy-based execution control,
+- signed execution token issuance,
+- token binding to request fields,
+- independent endpoint verification,
+- execution approval and rejection paths,
+- local JSONL audit log,
+- pytest coverage for the main demo flow.
+
+## Not implemented yet
+
+The following are intentionally outside the current MVP prototype:
+
+- real blockchain transaction signing,
+- real HSM-backed key custody,
+- future HSM integration adapter,
+- mTLS between Relay and Endpoint,
+- durable nonce store for request replay prevention,
+- operator identity and RBAC,
+- tamper-resistant audit storage,
+- high availability and failover,
+- secure production secret management.
+
+## Important limitation
+
+This repository is a demo-oriented **MVP prototype** for explaining execution authority separation. It is not production-ready and should not be used to custody or execute real assets.
