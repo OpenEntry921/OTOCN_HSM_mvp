@@ -7,6 +7,7 @@ This repository demonstrates a simple Relay + Endpoint flow for **policy-based e
 > Status: MVP prototype. Not production-ready.
 > Runtime: Python 3.9 compatible.
 > Tested on Python 3.9.
+> Typing: avoids Python 3.10+ only typing syntax such as `str | None`; use `Optional[...]` / `Union[...]` for Python 3.9 compatibility.
 
 ## Why this exists
 
