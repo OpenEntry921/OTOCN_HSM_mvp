@@ -58,6 +58,7 @@ def handle_request(req: ExecutionRequest):
             "stage": "token_issued",
             "request_id": req.request_id,
             "expires_at": token_info["expires_at"],
+            "expires_at_iso": token_info["expires_at_iso"],
         }
     )
 
