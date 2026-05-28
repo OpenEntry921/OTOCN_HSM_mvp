@@ -105,6 +105,14 @@ It prints:
 - `AUDIT EVENT CREATED`
 - final audit log output
 
+The token expiration time is displayed both as a Unix timestamp and as a human-readable ISO datetime for demo clarity.
+
+Example token issuance output:
+
+```text
+EXECUTION TOKEN ISSUED: eyJh... (expires_at=1779979067, expires_at_iso=2026-05-28T14:45:00Z)
+```
+
 ### Scenario A — 정상 요청 / Valid request
 
 Conditions:
@@ -151,7 +159,10 @@ The pytest suite covers:
 - tampered amount should be rejected,
 - tampered destination should be rejected,
 - expired token should be rejected,
-- audit event should be created.
+- audit event should be created,
+- token issuance output should include `expires_at`,
+- token issuance output should include `expires_at_iso`,
+- token-issued audit events should include `expires_at_iso`.
 
 ## Repository structure
 

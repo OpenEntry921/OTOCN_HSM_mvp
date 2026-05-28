@@ -32,7 +32,13 @@ def event(message: str, detail: Optional[str] = None) -> None:
 
 def token_summary(token_info: dict) -> str:
     token = token_info["token"]
-    return f"{token[:24]}...{token[-12:]} (expires_at={token_info['expires_at']})"
+    return (
+        f"{token[:24]}...{token[-12:]} "
+        "(expires_at="
+        f"{token_info['expires_at']}, "
+        "expires_at_iso="
+        f"{token_info['expires_at_iso']})"
+    )
 
 
 def request_to_dict(req: ExecutionRequest) -> dict:
@@ -90,6 +96,7 @@ def relay_authorize(req: ExecutionRequest, ttl_seconds: int = 30) -> Optional[di
             "stage": "token_issued",
             "request_id": req.request_id,
             "expires_at": token_info["expires_at"],
+            "expires_at_iso": token_info["expires_at_iso"],
         },
         path=str(AUDIT_PATH),
     )

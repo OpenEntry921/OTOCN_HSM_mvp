@@ -4,11 +4,21 @@ import hmac
 import json
 import os
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 
 def get_token_secret() -> bytes:
     return os.getenv("TOKEN_SECRET", "replace-this-with-a-long-random-secret").encode()
+
+
+def timestamp_to_iso(timestamp: int) -> str:
+    return (
+        datetime.fromtimestamp(timestamp, timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def sign_payload(payload: Dict[str, Any], ttl_seconds: int = 30) -> Dict[str, Any]:
@@ -24,7 +34,11 @@ def sign_payload(payload: Dict[str, Any], ttl_seconds: int = 30) -> Dict[str, An
         + base64.urlsafe_b64encode(sig).decode().rstrip("=")
     )
 
-    return {"token": token, "expires_at": payload["exp"]}
+    return {
+        "token": token,
+        "expires_at": payload["exp"],
+        "expires_at_iso": timestamp_to_iso(payload["exp"]),
+    }
 
 
 def verify_signed_token(token: str) -> Dict[str, Any]:

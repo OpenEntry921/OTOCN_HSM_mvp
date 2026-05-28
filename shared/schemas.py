@@ -21,6 +21,7 @@ class PolicyDecision(BaseModel):
 class ExecutionToken(BaseModel):
     token: str
     expires_at: float
+    expires_at_iso: str
 
 
 class ExecutionResult(BaseModel):
