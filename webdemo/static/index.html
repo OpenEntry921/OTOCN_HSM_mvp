@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OT-OCN 실행 통제 데모</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">◈ OT-OCN <span>EXECUTION CONTROL / LAB</span></div>
+      <h1>OT-OCN 실행 통제 데모</h1>
+      <p class="boundary">
+        검증 로직 실제 동작 · NDN 전달 모의 구현 · HSM 모의 서명 · 실제 자산
+        이동 없음
+      </p>
+    </header>
+    <main>
+      <section class="panel input">
+        <div class="eyebrow">01 / CREATE REQUEST</div>
+        <h2>거래 입력</h2>
+        <p class="muted">
+          선택한 데모 역할로 실행합니다. 실제 사용자 인증이 아닙니다.
+        </p>
+        <form id="trade">
+          <label
+            >요청자<select name="requester">
+              <option value="operator">데모 운영자</option>
+              <option value="reviewer">데모 검토자</option>
+              <option value="observer">조회 전용 사용자</option>
+            </select></label
+          >
+          <div class="pair">
+            <label
+              >자산<select name="asset">
+                <option>DUSD</option>
+                <option>DETH</option>
+              </select></label
+            ><label
+              >네트워크<select name="network">
+                <option value="demo-net">Demo Net</option>
+              </select></label
+            >
+          </div>
+          <label
+            >수량<input
+              name="amount"
+              value="1000.00"
+              inputmode="decimal"
+              required
+              maxlength="80"
+            /><small>DUSD 2자리 · DETH 8자리 / 상한 100,000</small></label
+          >
+          <label
+            >수신 주소<input
+              name="target"
+              value="wallet_A"
+              list="wallets"
+              maxlength="160"
+              required
+            /><datalist id="wallets">
+              <option value="wallet_A"></option>
+              <option value="wallet_B"></option></datalist
+            ><small
+              >허용 주소: wallet_A, wallet_B · 직접 입력 가능</small
+            ></label
+          >
+          <label
+            >실행 시나리오<select name="scenario" id="scenario">
+              <option value="normal">정상 거래</option>
+              <option value="amount_tamper">금액 변조</option>
+              <option value="address_tamper">수신 주소 변조</option>
+              <option value="replay">동일 요청 재전송</option>
+              <option value="expired">토큰 만료</option>
+              <option value="unsigned">서명 없는 NDN Data</option>
+              <option value="untrusted">신뢰하지 않는 서명자</option>
+              <option value="relay_compromise">Relay 침해</option>
+              <option value="policy">정책 위반</option>
+              <option value="cache">캐시 응답 재사용</option>
+            </select></label
+          >
+          <p id="attack" class="muted">
+            공격 시나리오는 실제 검증 입력을 변경합니다.
+          </p>
+          <button type="submit" id="execute">실행 <span>→</span></button>
+          <p id="connection" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="panel architecture">
+        <div class="eyebrow">02 / TRUST BOUNDARIES</div>
+        <h2>실행은 검증 뒤에</h2>
+        <p class="muted">
+          각 장비를 눌러 실제 데이터와 검증 항목을 확인하세요.
+        </p>
+        <div id="nodes" class="nodes"></div>
+        <p class="legend">○ 대기　◌ 처리 중　✓ 통과　⊘ 차단　! 오류</p>
+        <p class="muted">
+          앱 수준 NDN 모의 구현 · 동일 호스트 데모<br />단계 표시는 서버 이벤트
+          순서이며 통신 지연 측정값이 아닙니다.
+        </p>
+      </section>
+      <section class="panel result">
+        <div class="eyebrow">03 / EXECUTION RECEIPT</div>
+        <h2>실행 결과</h2>
+        <div id="result" aria-live="polite">
+          <div class="empty">
+            ◇
+            <p>거래를 실행하면<br />검증 결과가 여기에 표시됩니다.</p>
+          </div>
+        </div>
+        <label
+          >최근 실행<select id="history">
+            <option value="">실행 기록 선택</option>
+          </select></label
+        ><button type="button" id="refresh" class="secondary">
+          이력 새로고침
+        </button>
+      </section>
+      <section class="panel audit">
+        <div class="audit-head">
+          <div>
+            <div class="eyebrow">04 / AUDIT TRAIL</div>
+            <h2>감사 기록</h2>
+          </div>
+          <div>
+            <button id="json" class="secondary">원본 JSON</button>
+            <a id="download" hidden>기록 다운로드 ↓</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>순번</th>
+                <th>처리 시각 (KST)</th>
+                <th>처리 주체 / 단계</th>
+                <th>결과</th>
+                <th>사유</th>
+              </tr>
+            </thead>
+            <tbody id="events"></tbody>
+          </table>
+        </div>
+        <pre id="raw" hidden></pre>
+        <p class="muted">
+          감사 기록은 SQLite에 저장됩니다. 위변조 불가능한 증거 저장소가
+          아닙니다.
+        </p>
+      </section>
+    </main>
+    <footer>OT-OCN / 연구·시연용 &nbsp; · &nbsp; 외부 자산 연결 없음</footer>
+  </body>
+</html>

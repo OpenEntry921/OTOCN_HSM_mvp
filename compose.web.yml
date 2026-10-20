@@ -1,0 +1,24 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: webdemo/Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      DEMO_ACCESS_KEY: ${DEMO_ACCESS_KEY:-}
+    volumes:
+      - web-demo-state:/state
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,os,base64; r=urllib.request.Request('http://127.0.0.1:8080/api/config'); k=os.getenv('DEMO_ACCESS_KEY'); r.add_header('Authorization','Basic '+base64.b64encode(('demo:'+k).encode()).decode()) if k else None; assert urllib.request.urlopen(r,timeout=2).status==200",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+volumes:
+  web-demo-state:

@@ -1,0 +1,11 @@
+.git
+.venv
+.demo-state
+__pycache__
+.pytest_cache
+logs
+*.pyc
+.env
+.env.*
+!.env.example
+*.key
